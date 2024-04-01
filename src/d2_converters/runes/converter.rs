@@ -4,7 +4,7 @@ pub fn convert_line(line: &str) -> String {
         replace_tokens_with_expected_defaults(&mut tokens)
     }
     {
-        delete_irrelevent_entries(&mut tokens)
+        delete_irrelevent_entries_after_all_manipulations_complete(&mut tokens)
     }
 
     return tokens.join("\t");
@@ -19,31 +19,31 @@ fn replace_tokens_with_expected_defaults(tokens: &mut Vec<&str>){
     let is_runeword = tokens[0].starts_with("Runeword");
     
     if is_runeword {
-        set_runeword_enabled_in_single_player(tokens);
+        override_runeword_row_fields(tokens);
     } else {
-        override_header_row(tokens);
+        override_header_row_fields(tokens);
     }
 }
 
-fn override_header_row(tokens: &mut Vec<&str>) {
+fn override_header_row_fields(tokens: &mut Vec<&str>) {
     tokens[1] = "Rune Name";
     tokens[3] = "server";
+    // note this eventually gets bumped down to 13, because we later delete two columns
+    tokens[15] = "*runes"; 
+    tokens[50] = "eol"; 
 }
 
-fn set_runeword_enabled_in_single_player(tokens: &mut Vec<&str>) {
-    tokens[3] = "1";
-    tokens[4] = "1";
+fn override_runeword_row_fields(tokens: &mut Vec<&str>) {
+    tokens[3] = "";
+    if tokens[5] == "109" {
+        // The runes field doesn't seem filled in for runes introduced in patch 109
+        tokens[15] = ""
+    }
 }
 
-fn delete_irrelevent_entries(tokens: &mut Vec<&str>) {
+fn delete_irrelevent_entries_after_all_manipulations_complete(tokens: &mut Vec<&str>) {
 
-    const INDICES_TO_REMOVE: [usize; 8] = [
-        50, // eol
-        49, // T1Max7
-        48, // T1Min7
-        47, // T1Param7
-        46, // T1Code7
-        15, // *RunesUsed
+    const INDICES_TO_REMOVE: [usize; 2] = [
         5, // *Patch
         4 // lastLadderSeason
     ];
@@ -64,6 +64,9 @@ mod tests {
 
         let expected = consts::lod::HEADER;
         let actual = convert_line(consts::resurrected::HEADER);
+
+        println!("expected \n {}", expected);
+        println!("actual \n {}", actual);
         assert_eq!(expected, actual);
     }
 
@@ -73,6 +76,30 @@ mod tests {
         let expected = consts::lod::ANCIENTS_PLEDGE;
         let actual = convert_line(consts::resurrected::ANCIENTS_PLEDGE);
 
+        println!("expected \n {}", expected);
+        println!("actual \n {}", actual);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn convert_line_should_convert_black() {
+
+        let expected = consts::lod::BLACK;
+        let actual = convert_line(consts::resurrected::BLACK);
+        
+        println!("expected \n {}", expected);
+        println!("actual \n {}", actual);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn convert_line_should_convert_spirit() {
+
+        let expected = consts::lod::SPIRIT;
+        let actual = convert_line(consts::resurrected::SPIRIT);
+        
+        println!("expected \n {}", expected);
+        println!("actual \n {}", actual);
         assert_eq!(expected, actual);
     }
 
@@ -99,8 +126,12 @@ mod tests {
         let mut split = split_line_tab_deliminater(consts::resurrected::HEADER);
         assert_eq!(split[1], "*Rune Name");
         assert_eq!(split[3], "firstLadderSeason");
-        override_header_row(&mut split);
+        assert_eq!(split[15], "*RunesUsed");
+        assert_eq!(split[50], "*eol");
+        override_header_row_fields(&mut split);
         assert_eq!(split[1], "Rune Name");
         assert_eq!(split[3], "server");
+        assert_eq!(split[15], "*runes");
+        assert_eq!(split[50], "eol");
     }
 }
