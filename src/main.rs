@@ -15,7 +15,7 @@ fn main() {
         .map(|line| convert_line(line))
         .collect();
 
-    let file = File::create("C:\\tmp\\converted_runes.txt")
+    let file = File::create("outputs\\runes_converted.txt")
         .expect("Couldn't create the converted file to write to");
 
     let mut file = LineWriter::new(file);
