@@ -6,3 +6,4 @@
 
 # Contents
 - runes.txt, converted from retail d2r. For the people needing dirty hax, there's a runeword Armageddon, make from `ElEl` that is rediculously OP. This is added so that you can test that the runewords are taking effect, and you can use it if you just want easy mode. I created it for fun. 
+- levels.txt, with area levels from d2r
